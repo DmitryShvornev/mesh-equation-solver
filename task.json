@@ -1,0 +1,15 @@
+{
+	"type" : "HeatEquation1D",
+	"x0": 0,
+	"x1": 1,
+	"a": 2,
+	"ICS": "(x - 0.5)**2",
+	"BC": ["2", "3"], 
+	"rightPart": "0",
+	"solver": {
+		"type": "fdm",
+		"scheme": "explicit",
+		"h": 0.1,
+		"tau": 0.2
+	}
+}
