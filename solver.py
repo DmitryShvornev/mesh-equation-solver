@@ -15,15 +15,21 @@ with open("task.json", 'r') as task_file:
     task = json.load(task_file)
 
 print(task)
+# функция, задающая начальные условия
+expr1 = parse_expr(task["ICS"])
+x = Symbol("x")
+ICS = lambdify(x, expr1)
 
-def f(x, t):
-    return x * t
+# функция, задающая правую часть
+expr2 = parse_expr(task["rightPart"])
+t = Symbol("t")
+f = lambdify([t,x], expr2)
 
 h = task["solver"]["h"]
 tau = task["solver"]["tau"]
 a = task["a"]
-p = -a * tau / (h ** 2)
-q = 1 + 2 * a * tau / (h ** 2)
+p = -(a**2) * tau / (h ** 2)
+q = 1 + 2 * (a**2) * tau / (h ** 2)
 r = p
 MESH_SIZE = 100
 beta0 = task["BC"][0]
@@ -39,7 +45,9 @@ H[MESH_SIZE, MESH_SIZE] = 1
 print(H)
 
 U1 = np.zeros((1001, MESH_SIZE + 1))
-U1[0] = np.array([2 * beta0 for k in range(MESH_SIZE + 1)])
+# начальные условия
+U1[0] = np.array([ICS(k*h) for k in range(MESH_SIZE + 1)])
+
 t1 = 0
 for j in range(1, 1001):
     B = np.zeros((MESH_SIZE + 1, 1))
@@ -50,9 +58,17 @@ for j in range(1, 1001):
         F[i, 0] = tau * f(t1, x1)
         x1 += h
     t1 += tau
+    '''
+    получается  странная штука - с этим кодом профиль температуры начинается в значениях -500 цельсиев/кельвинов
     B[0, 0] = beta0
     B[MESH_SIZE, 0] = beta0
     B1[0, 0] = beta1
+    B1[MESH_SIZE, 0] = beta1
+    в исправленном коде профиль  - прямая линия, но зато в положительных значениях
+    '''
+    B[0, 0] = beta0
+    B[MESH_SIZE, 0] = beta1
+    B1[0, 0] = beta0
     B1[MESH_SIZE, 0] = beta1
     U1[j] = (np.dot(inv(H),((U1[j - 1]).reshape((MESH_SIZE + 1, 1)) - B1 + B + F))).reshape((MESH_SIZE + 1))
 
