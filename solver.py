@@ -31,7 +31,8 @@ a = task["a"]
 p = -(a**2) * tau / (h ** 2)
 q = 1 + 2 * (a**2) * tau / (h ** 2)
 r = p
-MESH_SIZE = 100
+MESH_SIZE = int((task["x1"]-task["x0"])/h)
+#h = (1)/MESH_SIZE
 beta0 = task["BC"][0]
 beta1 = task["BC"][1]
 
@@ -73,6 +74,6 @@ for j in range(1, 1001):
     U1[j] = (np.dot(inv(H),((U1[j - 1]).reshape((MESH_SIZE + 1, 1)) - B1 + B + F))).reshape((MESH_SIZE + 1))
 
 
-u3 = U1[500]
-plt.plot(np.linspace(0,1,MESH_SIZE + 1),u3)
+u3 = U1[0]
+plt.plot(np.linspace(0,1,MESH_SIZE+1),u3)
 plt.show()
