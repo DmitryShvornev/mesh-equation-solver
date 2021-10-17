@@ -6,15 +6,12 @@ from sympy import *
 import numpy as np
 from numpy.linalg import inv
 
-# "ICS": "(x - 0.5)**2", //u(x,0)
-# "BC": ["2", "3"], //u(0,t), u(1,t)
-
 # Неявная схема
 
+# загрузка данных
 with open("task.json", 'r') as task_file:
     task = json.load(task_file)
 
-print(task)
 # функция, задающая начальные условия
 expr1 = parse_expr(task["ICS"])
 x = Symbol("x")
@@ -28,52 +25,43 @@ f = lambdify([t,x], expr2)
 h = task["solver"]["h"]
 tau = task["solver"]["tau"]
 a = task["a"]
-p = -(a**2) * tau / (h ** 2)
-q = 1 + 2 * (a**2) * tau / (h ** 2)
+p = -(a ** 2) * tau / (h ** 2)
+q = 1 + 2 * (a ** 2) * tau / (h ** 2)
 r = p
-MESH_SIZE = int((task["x1"]-task["x0"])/h)
-#h = (1)/MESH_SIZE
-beta0 = task["BC"][0]
-beta1 = task["BC"][1]
+MESH_X_SIZE = int((task["x1"]-task["x0"]) / h)
+MESH_T_SIZE = int(1 / tau)
+beta0 = lambdify(t, task["BC"][0])
+beta1 = lambdify(t, task["BC"][1])
 
-H = np.zeros((MESH_SIZE + 1, MESH_SIZE + 1))
+H = np.zeros((MESH_X_SIZE + 1, MESH_X_SIZE + 1))
 for i in range(1, H.shape[0] - 1):
-    H[i, i-1] = p
+    H[i, i - 1] = p
     H[i, i] = q
-    H[i, i+1] = r
+    H[i, i + 1] = r
 H[0, 0] = 1
-H[MESH_SIZE, MESH_SIZE] = 1
-print(H)
+H[MESH_X_SIZE, MESH_X_SIZE] = 1
 
-U1 = np.zeros((1001, MESH_SIZE + 1))
+U = np.zeros((MESH_T_SIZE + 1, MESH_X_SIZE + 1))
+
 # начальные условия
-U1[0] = np.array([ICS(k*h) for k in range(MESH_SIZE + 1)])
+U[0] = np.array([ICS(k * h) for k in range(MESH_X_SIZE + 1)])
 
 t1 = 0
-for j in range(1, 1001):
-    B = np.zeros((MESH_SIZE + 1, 1))
-    B1 = np.zeros((MESH_SIZE + 1, 1))
-    F = np.zeros((MESH_SIZE + 1, 1))
+for j in range(1, MESH_T_SIZE + 1):
+    B = np.zeros((MESH_X_SIZE + 1, 1))
+    B1 = np.zeros((MESH_X_SIZE + 1, 1))
+    F = np.zeros((MESH_X_SIZE + 1, 1))
     x1 = 0
-    for i in range(1, MESH_SIZE):
+    for i in range(1, MESH_X_SIZE):
         F[i, 0] = tau * f(t1, x1)
         x1 += h
+    B[0, 0] = beta0(t1)
+    B[MESH_X_SIZE, 0] = beta1(t1)
     t1 += tau
-    '''
-    получается  странная штука - с этим кодом профиль температуры начинается в значениях -500 цельсиев/кельвинов
-    B[0, 0] = beta0
-    B[MESH_SIZE, 0] = beta0
-    B1[0, 0] = beta1
-    B1[MESH_SIZE, 0] = beta1
-    в исправленном коде профиль  - прямая линия, но зато в положительных значениях
-    '''
-    B[0, 0] = beta0
-    B[MESH_SIZE, 0] = beta1
-    B1[0, 0] = beta0
-    B1[MESH_SIZE, 0] = beta1
-    U1[j] = (np.dot(inv(H),((U1[j - 1]).reshape((MESH_SIZE + 1, 1)) - B1 + B + F))).reshape((MESH_SIZE + 1))
+    B1[0, 0] = beta0(t1)
+    B1[MESH_X_SIZE, 0] = beta1(t1)
+    U[j] = (np.dot(inv(H), ((U[j - 1]).reshape((MESH_X_SIZE + 1, 1)) - B1 + B + F))).reshape((MESH_X_SIZE + 1))
 
-
-u3 = U1[0]
-plt.plot(np.linspace(0,1,MESH_SIZE+1),u3)
+u = U[400]
+plt.plot(np.linspace(0, 1, MESH_X_SIZE + 1), u)
 plt.show()
