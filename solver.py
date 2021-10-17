@@ -60,7 +60,7 @@ for j in range(1, MESH_T_SIZE + 1):
     t1 += tau
     B1[0, 0] = beta0(t1)
     B1[MESH_X_SIZE, 0] = beta1(t1)
-    U[j] = (np.dot(inv(H), ((U[j - 1]).reshape((MESH_X_SIZE + 1, 1)) - B1 + B + F))).reshape((MESH_X_SIZE + 1))
+    U[j] = (np.dot(inv(H), ((U[j - 1]).reshape((MESH_X_SIZE + 1, 1)) + B1 - B + F))).reshape((MESH_X_SIZE + 1))
 
 u = U[400]
 plt.plot(np.linspace(0, 1, MESH_X_SIZE + 1), u)
