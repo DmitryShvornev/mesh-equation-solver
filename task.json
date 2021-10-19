@@ -1,16 +1,17 @@
 {
-	"type" : "HeatEquation1D",
-	"x0": 0,
-	"x1": 1,
-	"a": 2,
-	"ICS": "100*(x - 0.5)**2",
-	"BC_1": ["16 + t", "30 + 6*cos(t)"],
-	"BC_2":["16", "-6*sin(t)"],
-	"rightPart": "-2 - (x**2 - 2*x)*cos(1.57*t)/2 - 2*sin(1.57*t)",
-	"solver": {
-		"type": "fdm",
-		"scheme": "explicit",
-		"h": 0.05,
-		"tau": 0.001
-	}
+  "type": "HeatEquation1D",
+  "x0": 0,
+  "x1": 1,
+  "a": 2,
+  "ICS": "100*(x - 0.5)**2",
+  "BC_num": [2,2],
+  "BC_1": [ "25 + t", "30 - 5*cos(t)" ],
+  "BC_2": [ "1", "5*sin(t)" ],
+  "rightPart": "-2 - (x**2 - 2*x)*cos(1.57*t)/2 - 2*sin(1.57*t)",
+  "solver": {
+    "type": "fdm",
+    "scheme": "explicit",
+    "h": 0.05,
+    "tau": 0.001
+  }
 }
