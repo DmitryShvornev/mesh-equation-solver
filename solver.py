@@ -30,8 +30,11 @@ q = 1 + 2 * (a ** 2) * tau / (h ** 2)
 r = p
 MESH_X_SIZE = int((task["x1"]-task["x0"]) / h)
 MESH_T_SIZE = int(1 / tau)
-beta0 = lambdify(t, task["BC"][0])
-beta1 = lambdify(t, task["BC"][1])
+beta0 = lambdify(t, task["BC_1"][0])
+beta1 = lambdify(t, task["BC_1"][1])
+
+dzeta0 = lambdify(t, task["BC_2"][0])
+dzeta1 = lambdify(t, task["BC_2"][1])
 
 H = np.zeros((MESH_X_SIZE + 1, MESH_X_SIZE + 1))
 for i in range(1, H.shape[0] - 1):
